@@ -1,0 +1,17 @@
+{
+  "name": "player-video",
+  "version": "1.0.0",
+  "description": "Custom video player",
+  "main": "index.html",
+  "scripts": {
+    "start": "parcel index.html --open"
+  },
+  "dependencies": {
+    "parcel": "1.12.4"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.6.1",
+    "sass": "^1.43.2"
+  },
+  "keywords": []
+}
