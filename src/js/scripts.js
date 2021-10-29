@@ -4,8 +4,11 @@ import {
   volumeMedium,
   volumeHight,
   iconPause,
+  iconPauseLarge,
   iconPlay,
+  iconPlayLarge,
   expanded,
+  compress,
   spiderMovie
 } from '../assets'
 
@@ -23,6 +26,7 @@ import {
   const uploadButton = document.getElementById('uploadButton');
   const inputUploadVideo = document.getElementById('input_upload_video');
   const video = document.getElementById('video');
+  const videoCanvas = document.getElementById('videoCanvas');
   const loading = document.getElementById('loading');
   const statusVolume = document.getElementById('status-volume');
   const btnPlay = document.getElementById('btn-play');
@@ -33,14 +37,29 @@ import {
   const timer = document.getElementById('video-time');
   const sliderVol = document.getElementById('slider-vol');
   const videoContainer = document.getElementById('video-container');
+  const cover = document.getElementById('cover');
+  const controls = document.getElementById('controls');
+  const preview = document.getElementById('preview');
+  const timeVideo = document.getElementById('time-video');
 
   statusVolume.innerHTML = getStatusVolue();
   btnPlay.innerHTML = iconPlay;
   fullScreen.innerHTML = expanded;
   sliderVol.value = localStorage.getItem('volume');
+  controls.style.opacity = 0;
+  progressBar.style.opacity = 0;
 
   video.src = spiderMovie;
+  videoCanvas.src = spiderMovie;
+  let statusHover, statusPlayPauseVideo = false
 
+  let inialIntervalTime = null;
+  let inialIntervalPreview, 
+    timeDisplayNone, 
+    timeDisplayFlex, 
+    timeTransitionZero = null;
+    
+  let statusScreen = 1;
   let intervalTime,
     hour, 
     min, 
@@ -51,7 +70,6 @@ import {
     bufferEnd,
     pctSeek,
     pctBar;
-
       
   function dragMove(e) {    
     if(width<800) {
@@ -76,9 +94,11 @@ import {
     progressBar.removeEventListener('touchmove', dragMove);
     progressBar.removeEventListener('touchend', dragEnd);
 
-    video.play();
+    if(statusPlayPauseVideo) {
+      video.play();
+      btnPlay.innerHTML = iconPause;
+    }
 
-    btnPlay.innerHTML = iconPause;
 
     intervalTime = setInterval(updateTime, 100);
   }
@@ -107,19 +127,29 @@ import {
 
   function play(e) {
     btnPlay.innerHTML = '';
-    
+    cover.style.opacity = 1;
+
+    let teste = setTimeout(() => {
+      cover.style.opacity = 0;
+    }, 1000)
+
     if(video.paused) {
       video.play();
 
       btnPlay.innerHTML = iconPause;
+      cover.innerHTML = iconPlayLarge;
+      statusPlayPauseVideo = true
 
       intervalTime = setInterval(updateTime, 100);
     } else {
       video.pause();
+      statusPlayPauseVideo = false
 
       btnPlay.innerHTML = iconPlay;
+      cover.innerHTML = iconPauseLarge;
 
       clearInterval(intervalTime);
+      clearTimeout(teste)
     }
   }
   
@@ -168,7 +198,7 @@ import {
     }
 
     timer.innerHTML = convertTime(currentHour, currentMin, currentSeg) +
-    ' | ' + convertTime(hour, min, seg);
+    ' / ' + convertTime(hour, min, seg);
   }
   
   function loader(event) {
@@ -197,7 +227,7 @@ import {
     videoProgress.style.width = String(pctSeek) + '%'
 
     timer.innerHTML = convertTime(currentHour, currentMin, currentSeg) +
-      ' | ' + convertTime(hour, min, seg);
+      ' / ' + convertTime(hour, min, seg);
   }
 
   function muted() {
@@ -283,6 +313,14 @@ import {
         document.webkitExitFullscreen();
       }
     }
+
+    if(statusScreen === 1) {
+      fullScreen.innerHTML = compress
+      statusScreen= 2
+    } else {      
+      fullScreen.innerHTML = expanded
+      statusScreen= 1
+    }
   }
 
   function loadVideo() {
@@ -294,13 +332,13 @@ import {
 
     progressBar.addEventListener('click', seeker)
     btnPlay.addEventListener('click', play);
-    video.addEventListener('click', play);
+    cover.addEventListener('click', play);
     video.addEventListener('waiting', loader);
     video.addEventListener('playing', loader);
     statusVolume.addEventListener('click', muted);
     sliderVol.addEventListener('input', changeVolume);
     fullScreen.addEventListener('click', changeFullScreen)
-    video.addEventListener('dblclick', changeFullScreen);
+    cover.addEventListener('dblclick', changeFullScreen);
 
     video.muted = JSON.parse(localStorage.getItem('muted'));
     sliderVol.value = localStorage.getItem('volume');
@@ -317,9 +355,88 @@ import {
       currentSeg = Math.floor(((video.currentTime / 60) % 1) * 60);
 
       timer.innerHTML = convertTime(currentHour, currentMin, currentSeg) +
-      ' | ' + convertTime(hour, min, seg);
+      ' / ' + convertTime(hour, min, seg);
     }, 800);
   }
+
+  progressBar.addEventListener('mousemove', (e) => {
+ 
+    pctBar = (e.offsetX / progressBar.clientWidth) * 100;
+
+    currentHour = Math.floor(((video.duration * pctBar) / 100) / 3600);
+    currentMin = Math.floor(((video.duration * pctBar) / 100) / 60);
+    currentSeg = Math.floor(((((video.duration * pctBar) / 100) / 60) % 1) * 60);
+
+    pctSeek = (video.currentTime / video.duration) * 100;
+
+    let newVideo = videoCanvas
+    // newVideo
+    newVideo.currentTime = (video.duration * pctBar) / 100;
+
+    if(e.offsetX >= 75 && e.offsetX <= progressBar.clientWidth - 75) {
+      preview.style.marginLeft = e.offsetX-75+'px';
+    }
+    
+    var canvas = document.getElementById("canvas");
+    canvas.height = videoCanvas.videoHeight;
+    canvas.width = videoCanvas.videoWidth;
+    var context = canvas.getContext('2d');
+    context.drawImage(videoCanvas, 0, 0)
+
+    if(!statusHover) {
+      preview.style.display = 'flex';
+      
+
+      timeDisplayFlex = setTimeout(() => {
+        preview.style.transition = '1s';
+        preview.style.opacity = '1';
+      }, 1000)
+
+      timeTransitionZero = setTimeout(() => {
+        preview.style.transition = '0s';
+      }, 1000)
+    }
+
+    // clearTimeout(timeDisplayFlex)    
+    // clearTimeout(timeTransitionZero)   
+
+    statusHover = true;
+    clearTimeout(inialIntervalPreview)
+    clearTimeout(timeDisplayNone)
+
+    timeVideo.innerHTML = convertTime(currentHour, currentMin, currentSeg);
+  })
+
+  progressBar.addEventListener('mouseout', () => {
+    inialIntervalPreview = setTimeout(() => {
+      preview.style.transition = '1s';
+      preview.style.opacity = '0';
+      statusHover = false
+    }, 200)
+
+    timeDisplayNone = setTimeout(() => {
+      preview.style.display = 'none';
+      preview.style.transition = '0s';
+    }, 3000)
+  })
+
+  videoContainer.addEventListener('mouseover', (e) => {
+    controls.style.opacity = '1'
+    progressBar.style.opacity = '1'
+    controls.style.transition = '1s'
+    progressBar.style.transition = '1s'
+
+    clearInterval(inialIntervalTime)
+  });
+
+  videoContainer.addEventListener('mouseout', (e) => {
+    inialIntervalTime = setInterval(() => {
+      controls.style.opacity = '0'
+      progressBar.style.opacity = '0'
+      controls.style.transition = '2s'
+      progressBar.style.transition = '2s'
+    }, 1000);
+  })
 
   uploadButton.addEventListener('click', () => {
     inputUploadVideo.click();
@@ -347,4 +464,5 @@ import {
   });
 
   video.addEventListener('loadeddata', loadVideo);
+  videoCanvas.addEventListener('loadeddata', loadVideo);
 })();

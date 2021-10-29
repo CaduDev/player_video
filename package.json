@@ -2,9 +2,9 @@
   "name": "player-video",
   "version": "1.0.0",
   "description": "Custom video player",
-  "main": "index.html",
+  "main": "src/index.html",
   "scripts": {
-    "start": "parcel index.html --open"
+    "start": "parcel src/index.html --open"
   },
   "dependencies": {
     "parcel": "1.12.4"

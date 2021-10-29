@@ -40,34 +40,48 @@
         </div>
       </div>
       <video id="video" src=""></video>
-      <div class="controls">
+      <div id="cover"></div>
+      <div class="bottom">
         <div id="progress-bar" class="progress-bar float-left">
           <div id="video-loader" class="video-loader"></div>
           <div id="video-progress" class="video-progress"></div>
         </div>
-        <div id="btn-play" class="video-play video-btn float-left">
-        </div>
-        <div 
-          id="status-volume"
-          class="status-volume video-btn float-left"
-        >
-        </div>
-        <div class="slider float-left">
-          <input 
-            type="range" 
-            id="slider-vol" 
-            class="slider-vol" 
-            min="0" 
-            max="1" 
-            step="0.01"
-            value="1"
-          />         
-        </div>
-        <div id="video-time" class="video-time float-left">00:00 | 00:00</div>
-        <div id="full-screen" class="float-right">
+        <div class="controls" id="controls">
+          <div id="preview" class="preview">
+            <div id="thumbnail-video" class="thumbnail">
+              <canvas id="canvas">
+  
+              </canvas>
+            </div>
+            <div id="time-video" class="time-video">00:02</div>
+          </div>
+          <div id="btn-play" class="video-play video-btn float-left">
+          </div>
+          <div 
+            id="status-volume"
+            class="status-volume video-btn float-left"
+          >
+          </div>
+          <div class="slider float-left">
+            <input 
+              type="range" 
+              id="slider-vol" 
+              class="slider-vol" 
+              min="0" 
+              max="1" 
+              step="0.01"
+              value="1"
+            />         
+          </div>
+          <div id="video-time" class="video-time float-left">00:00 | 00:00</div>
+          <div id="full-screen" class="float-right">
+          </div>
         </div>
       </div>
     </div>
+
+    <video id="videoCanvas" src="" buffered="false" muted></video>
+
     <script src="./js/scripts.js" async></script>
   </body>
 </html>
