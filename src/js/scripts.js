@@ -8,8 +8,7 @@ import {
   iconPlay,
   iconPlayLarge,
   expanded,
-  compress,
-  spiderMovie
+  compress
 } from '../assets'
 
 (function () {
@@ -49,8 +48,8 @@ import {
   controls.style.opacity = 0;
   progressBar.style.opacity = 0;
 
-  video.src = spiderMovie;
-  videoCanvas.src = spiderMovie;
+  video.src = null;
+  videoCanvas.src = null;
   let statusHover, statusPlayPauseVideo = false
 
   let inialIntervalTime = null;
