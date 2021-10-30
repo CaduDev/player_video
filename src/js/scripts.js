@@ -344,7 +344,7 @@ import {
     sliderVol.addEventListener('input', changeVolume);
     fullScreen.addEventListener('click', changeFullScreen)
     cover.addEventListener('dblclick', changeFullScreen);
-    console.log(localStorage.getItem('volume'))
+
     video.muted = JSON.parse(localStorage.getItem('muted'));
     sliderVol.value = parseFloat(localStorage.getItem('volume'));
     video.volume = parseFloat(localStorage.getItem('volume'));
@@ -479,25 +479,26 @@ import {
   inputUploadVideo.addEventListener('change', (e) => {
     const { files } = e.target;
 
-    console.log(files)
+    if(files.length > 0) {
+      loading.style.display = 'flex';
+      
+      getBase64(files[0]).then(data => {
+        video.src = data;
+        videoCanvas.src = data;
+  
+        progressBar.removeEventListener('click', seeker)
+        videoProgress.removeEventListener('mousedown', dragStart);
+        videoProgress.removeEventListener('touchstart', dragStart);
+        btnPlay.removeEventListener('click', play);
+        video.removeEventListener('click', play);
+        video.removeEventListener('waiting', loader);
+        video.removeEventListener('playing', loader);
+        statusVolume.removeEventListener('click', muted);
+        sliderVol.removeEventListener('input', changeVolume);
+        fullScreen.removeEventListener('click', changeFullScreen)
+      });
+    }
 
-    loading.style.display = 'flex';
-    
-    getBase64(files[0]).then(data => {
-      video.src = data;
-      videoCanvas.src = data;
-
-      progressBar.removeEventListener('click', seeker)
-      videoProgress.removeEventListener('mousedown', dragStart);
-      videoProgress.removeEventListener('touchstart', dragStart);
-      btnPlay.removeEventListener('click', play);
-      video.removeEventListener('click', play);
-      video.removeEventListener('waiting', loader);
-      video.removeEventListener('playing', loader);
-      statusVolume.removeEventListener('click', muted);
-      sliderVol.removeEventListener('input', changeVolume);
-      fullScreen.removeEventListener('click', changeFullScreen)
-    });
   });
 
   picInPic.addEventListener("click", setPicInPic);
