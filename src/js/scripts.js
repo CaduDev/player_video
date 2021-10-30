@@ -475,6 +475,7 @@ import {
   uploadButton.addEventListener('click', () => {
     inputUploadVideo.click();
   });
+  
 
   inputUploadVideo.addEventListener('change', (e) => {
     const { files } = e.target;
