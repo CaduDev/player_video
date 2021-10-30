@@ -44,6 +44,20 @@ body {
         }
     }
 
+    > .mini-player {
+        width: 400px !important;
+        height: 270px !important;
+        position: fixed !important;
+        bottom: 12px !important;
+        right: 12px !important;
+
+        
+        @media only screen and (max-width: 800px) {
+            width: 250px !important;
+            height: 150px !important;
+        }
+    }
+
     > #video-container {
         width: 600px;
         height: 400px;
@@ -59,6 +73,24 @@ body {
         @media only screen and (max-width: 800px) {
             width: 96%;
             max-height: 100%;
+        }
+
+        #remove-pic-in-pic {
+            z-index: 99;
+            cursor: pointer;
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.5;
+            cursor: pointer;
+
+            &:hover {
+                opacity: 1;
+                transition: 0.5s;
+            }
         }
 
         &:fullscreen {
@@ -460,7 +492,7 @@ body {
     
                 #btn-play {
                     position: relative;
-                    display: flex !important;
+                    display: flex;
                     justify-content: center;
                     align-items: center;
                     transition: 0.5s;
@@ -478,7 +510,7 @@ body {
     
                 #status-volume {
                     position: relative;
-                    display: flex !important;
+                    display: flex;
                     justify-content: center;
                     align-items: center;
                     transition: 0.5s;
@@ -500,7 +532,7 @@ body {
     
                 #video-time {
                     position: relative;
-                    display: flex !important;
+                    display: flex;
                     justify-content: center;
                     align-items: center;
                     transition: 0.5s;
@@ -534,6 +566,22 @@ body {
                         opacity: 1;
                         transition: 0.5s;
                     }
+                }
+
+                #pic-in-pic {
+                    float: right;
+                    width: 40px;
+                    height: 90%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    opacity: 0.5;
+                    cursor: pointer;
+    
+                    &:hover {
+                        opacity: 1;
+                        transition: 0.5s;
+                    }                    
                 }
             }
         }

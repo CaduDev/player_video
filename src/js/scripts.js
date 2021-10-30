@@ -8,7 +8,9 @@ import {
   iconPlay,
   iconPlayLarge,
   expanded,
-  compress
+  compress,
+  expandPicInPic,
+  compressPicInPic
 } from '../assets'
 
 (function () {
@@ -40,17 +42,21 @@ import {
   const controls = document.getElementById('controls');
   const preview = document.getElementById('preview');
   const timeVideo = document.getElementById('time-video');
+  const picInPic = document.getElementById('pic-in-pic');
+  const removePicInPic = document.getElementById('remove-pic-in-pic');
 
   statusVolume.innerHTML = getStatusVolue();
   btnPlay.innerHTML = iconPlay;
   fullScreen.innerHTML = expanded;
+  picInPic.innerHTML = compressPicInPic
+  removePicInPic.innerHTML = expandPicInPic
   sliderVol.value = localStorage.getItem('volume');
   controls.style.opacity = 0;
   progressBar.style.opacity = 0;
 
   video.src = null;
   videoCanvas.src = null;
-  let statusHover, statusPlayPauseVideo = false
+  let statusHover, statusPlayPauseVideo, statusPicInPic = false
 
   let inialIntervalTime = null;
   let inialIntervalPreview, 
@@ -72,11 +78,11 @@ import {
       
   function dragMove(e) {    
     if(width<800) {
-      if (e.touches[0].clientX <= progressBar.clientWidth) {
-        pctBar = (e.touches[0].clientX / progressBar.clientWidth) * 100;
+      if (e.changedTouches[0].clientX <= progressBar.clientWidth) {
+        pctBar = (e.changedTouches[0].clientX / progressBar.clientWidth) * 100;
         video.currentTime = (video.duration * pctBar) / 100;
         
-        return videoProgress.style.width = String(e.touches[0].clientX)+'px';
+        return videoProgress.style.width = String(e.changedTouches[0].clientX)+'px';
       }
     } else {
       pctBar = (e.offsetX / progressBar.clientWidth) * 100;
@@ -338,9 +344,10 @@ import {
     sliderVol.addEventListener('input', changeVolume);
     fullScreen.addEventListener('click', changeFullScreen)
     cover.addEventListener('dblclick', changeFullScreen);
-
+    console.log(localStorage.getItem('volume'))
     video.muted = JSON.parse(localStorage.getItem('muted'));
-    sliderVol.value = localStorage.getItem('volume');
+    sliderVol.value = parseFloat(localStorage.getItem('volume'));
+    video.volume = parseFloat(localStorage.getItem('volume'));
     btnPlay.innerHTML = iconPlay;
     loading.style.display = 'none';
 
@@ -358,7 +365,7 @@ import {
     }, 800);
   }
 
-  progressBar.addEventListener('mousemove', (e) => {
+  function changePreview(e) {
  
     pctBar = (e.offsetX / progressBar.clientWidth) * 100;
 
@@ -404,9 +411,9 @@ import {
     clearTimeout(timeDisplayNone)
 
     timeVideo.innerHTML = convertTime(currentHour, currentMin, currentSeg);
-  })
+  }
 
-  progressBar.addEventListener('mouseout', () => {
+  function ocultePreview() {
     inialIntervalPreview = setTimeout(() => {
       preview.style.transition = '1s';
       preview.style.opacity = '0';
@@ -417,7 +424,35 @@ import {
       preview.style.display = 'none';
       preview.style.transition = '0s';
     }, 3000)
-  })
+  }
+
+  function setPicInPic() {
+    if(!statusPicInPic) {
+      videoContainer.classList.add('mini-player');
+      picInPic.innerHTML = expandPicInPic;
+      statusPicInPic = true;
+      controls.style.display = 'none';
+      progressBar.style.marginBottom = '20px';
+      removePicInPic.style.display = 'flex';
+      
+      progressBar.removeEventListener('mousemove', changePreview)
+      progressBar.removeEventListener('mouseout', ocultePreview)
+    } else {
+      videoContainer.classList.remove('mini-player');
+      picInPic.innerHTML = compressPicInPic;
+      statusPicInPic = false;
+      controls.style.display = 'block';
+      progressBar.style.marginBottom = '0px';
+      removePicInPic.style.display = 'none';
+
+      progressBar.addEventListener('mousemove', changePreview)
+      progressBar.addEventListener('mouseout', ocultePreview)
+    }
+  }
+
+  progressBar.addEventListener('mousemove', changePreview)
+
+  progressBar.addEventListener('mouseout', ocultePreview)
 
   videoContainer.addEventListener('mouseover', (e) => {
     controls.style.opacity = '1'
@@ -444,10 +479,13 @@ import {
   inputUploadVideo.addEventListener('change', (e) => {
     const { files } = e.target;
 
+    console.log(files)
+
     loading.style.display = 'flex';
     
     getBase64(files[0]).then(data => {
       video.src = data;
+      videoCanvas.src = data;
 
       progressBar.removeEventListener('click', seeker)
       videoProgress.removeEventListener('mousedown', dragStart);
@@ -461,6 +499,9 @@ import {
       fullScreen.removeEventListener('click', changeFullScreen)
     });
   });
+
+  picInPic.addEventListener("click", setPicInPic);
+  removePicInPic.addEventListener("click", setPicInPic);
 
   video.addEventListener('loadeddata', loadVideo);
   videoCanvas.addEventListener('loadeddata', loadVideo);
