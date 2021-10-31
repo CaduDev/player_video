@@ -40,7 +40,6 @@ import {
   const uploadButton = document.getElementById('uploadButton');
   const inputUploadVideo = document.getElementById('input_upload_video');
   const video = document.getElementById('video');
-  const videoCanvas = document.getElementById('videoCanvas');
   const loading = document.getElementById('loading');
   const statusVolume = document.getElementById('status-volume');
   const btnPlay = document.getElementById('btn-play');
@@ -74,7 +73,7 @@ import {
   progressBar.style.opacity = 0;
 
   video.src = null;
-  videoCanvas.src = null;
+  // videoCanvas.src = null;
   let statusHover, statusPlayPauseVideo, statusPicInPic = false
 
   let inialIntervalTime = null;
@@ -93,7 +92,8 @@ import {
     currentSeg, 
     bufferEnd,
     pctSeek,
-    pctBar;
+    pctBar, 
+    videoPreview;
       
   function dragMove(e) {    
     if(width<800) {
@@ -399,6 +399,9 @@ import {
   }
 
   function changePreview(e) {
+    if(!videoPreview) {
+      videoPreview = video.cloneNode(true)
+    }
  
     pctBar = (e.offsetX / progressBar.clientWidth) * 100;
 
@@ -408,7 +411,8 @@ import {
 
     pctSeek = (video.currentTime / video.duration) * 100;
 
-    let newVideo = videoCanvas
+    let newVideo = videoPreview
+
     // newVideo
     newVideo.currentTime = (video.duration * pctBar) / 100;
 
@@ -417,10 +421,10 @@ import {
     }
     
     var canvas = document.getElementById("canvas");
-    canvas.height = videoCanvas.videoHeight;
-    canvas.width = videoCanvas.videoWidth;
+    canvas.height = newVideo.videoHeight;
+    canvas.width = newVideo.videoWidth;
     var context = canvas.getContext('2d');
-    context.drawImage(videoCanvas, 0, 0)
+    context.drawImage(newVideo, 0, 0)
 
     if(!statusHover) {
       preview.style.display = 'flex';
@@ -514,19 +518,26 @@ import {
       loading.style.display = 'flex';
       
       getBase64(files[0]).then(data => {
-        video.src = data;
-        videoCanvas.src = data;
+        fetch(data).then(response => {
+          response.blob().then(blob => {
+            video.src = URL.createObjectURL(blob) ;
+
+            progressBar.removeEventListener('click', seeker)
+            videoProgress.removeEventListener('mousedown', dragStart);
+            videoProgress.removeEventListener('touchstart', dragStart);
+            btnPlay.removeEventListener('click', play);
+            video.removeEventListener('click', play);
+            video.removeEventListener('waiting', loader);
+            video.removeEventListener('playing', loader);
+            statusVolume.removeEventListener('click', muted);
+            sliderVol.removeEventListener('input', changeVolume);
+            fullScreen.removeEventListener('click', changeFullScreen)
+          })
+        }) 
+
+        // videoCanvas.src = data;
   
-        progressBar.removeEventListener('click', seeker)
-        videoProgress.removeEventListener('mousedown', dragStart);
-        videoProgress.removeEventListener('touchstart', dragStart);
-        btnPlay.removeEventListener('click', play);
-        video.removeEventListener('click', play);
-        video.removeEventListener('waiting', loader);
-        video.removeEventListener('playing', loader);
-        statusVolume.removeEventListener('click', muted);
-        sliderVol.removeEventListener('input', changeVolume);
-        fullScreen.removeEventListener('click', changeFullScreen)
+
       });
     }
 
@@ -649,7 +660,7 @@ import {
 
     container.addEventListener('click', (element) => {
       video.src = e.url;
-      videoCanvas.src = e.url;
+      // videoCanvas.src = e.url;
     })
 
     timeAndData.appendChild(spanDuration)
@@ -681,7 +692,7 @@ import {
   picInPic.addEventListener("click", setPicInPic);
   removePicInPic.addEventListener("click", setPicInPic);
   video.addEventListener('loadeddata', loadVideo);
-  videoCanvas.addEventListener('loadeddata', loadVideo);
+  // videoCanvas.addEventListener('loadeddata', loadVideo);
 
   loadOtherVideo();
 })();
