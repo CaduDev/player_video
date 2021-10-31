@@ -2,4 +2,6 @@ node_modules
 .cache
 dist
 .backup
-src/assets/spider-movie.mp4
+src/assets/videos
+src/assets/thumbnail.png
+src/js/variavel.js

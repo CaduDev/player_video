@@ -10,17 +10,30 @@ import {
   expanded,
   compress,
   expandPicInPic,
-  compressPicInPic
+  compressPicInPic,
+  configurationIcon,
 } from '../assets'
 
 (function () {
   if(!localStorage.getItem('volume')) {
     localStorage.setItem('volume', 1);
   }
-
+  
   if(localStorage.getItem('muted') === null) {
     localStorage.setItem('muted', false);
   }
+  
+  let videoForTest = [
+    // {
+    //   cover: 'url of thumbnail of movie',
+    //   title: 'title of movie',
+    //   description: 'desciption (opcional)',
+    //   duration: 'duration of movie',
+    //   data: 'date of upload movie',
+    //   author: 'name of author',
+    //   url: 'url of movie'
+    // },
+  ];
 
   const width = window.innerWidth;
 
@@ -44,13 +57,19 @@ import {
   const timeVideo = document.getElementById('time-video');
   const picInPic = document.getElementById('pic-in-pic');
   const removePicInPic = document.getElementById('remove-pic-in-pic');
+  const buttonConfiguration = document.getElementById('button-configuration');
+  const contentConfiguration = document.getElementById('content-configuration');
+  const quality = document.getElementById('quality');
+  const speed = document.getElementById('speed');
+  const contentRight = document.getElementById('right');
 
   statusVolume.innerHTML = getStatusVolue();
   btnPlay.innerHTML = iconPlay;
   fullScreen.innerHTML = expanded;
-  picInPic.innerHTML = compressPicInPic
-  removePicInPic.innerHTML = expandPicInPic
+  picInPic.innerHTML = compressPicInPic;
+  removePicInPic.innerHTML = expandPicInPic;
   sliderVol.value = localStorage.getItem('volume');
+  buttonConfiguration.innerHTML = configurationIcon
   controls.style.opacity = 0;
   progressBar.style.opacity = 0;
 
@@ -109,6 +128,8 @@ import {
   }
 
   function dragStart(e) {
+    showConfiguration({ justHide: true });
+
     video.pause();
     clearInterval(intervalTime);
 
@@ -131,6 +152,8 @@ import {
   }
 
   function play(e) {
+    showConfiguration({ justHide: true });
+
     btnPlay.innerHTML = '';
     cover.style.opacity = 1;
 
@@ -220,6 +243,8 @@ import {
   }
 
   function seeker(event) {
+    showConfiguration({ justHide: true });
+
     pctBar = (event.offsetX / progressBar.clientWidth) * 100;
     video.currentTime = (video.duration * pctBar) / 100;
 
@@ -236,6 +261,8 @@ import {
   }
 
   function muted() {
+    showConfiguration({ justHide: true });
+
     if(video.muted) {
       statusVolume.innerHTML = volumeHight;
       video.muted = false;
@@ -248,6 +275,8 @@ import {
   }
 
   function changeVolume(e) {
+    showConfiguration({ justHide: true });
+
     let icon = ''
     const volToNumer = parseFloat(e.target.value); 
     const mutedStatus = JSON.parse(localStorage.getItem('muted'));
@@ -294,6 +323,8 @@ import {
   }
 
   function changeFullScreen() {
+    showConfiguration({ justHide: true });
+
     if (!document.fullscreenElement &&    // alternative standard method
     !document.mozFullScreenElement && 
     !document.webkitFullscreenElement && 
@@ -335,6 +366,8 @@ import {
       videoProgress.addEventListener('touchstart', dragStart);
     }    
 
+    progressBar.addEventListener('mousemove', changePreview)
+    progressBar.addEventListener('mouseout', ocultePreview)
     progressBar.addEventListener('click', seeker)
     btnPlay.addEventListener('click', play);
     cover.addEventListener('click', play);
@@ -427,6 +460,8 @@ import {
   }
 
   function setPicInPic() {
+    showConfiguration({ justHide: true });
+
     if(!statusPicInPic) {
       videoContainer.classList.add('mini-player');
       picInPic.innerHTML = expandPicInPic;
@@ -450,34 +485,29 @@ import {
     }
   }
 
-  progressBar.addEventListener('mousemove', changePreview)
-
-  progressBar.addEventListener('mouseout', ocultePreview)
-
-  videoContainer.addEventListener('mouseover', (e) => {
+  function showControls(e) {
     controls.style.opacity = '1'
     progressBar.style.opacity = '1'
     controls.style.transition = '1s'
     progressBar.style.transition = '1s'
 
     clearInterval(inialIntervalTime)
-  });
+  }
 
-  videoContainer.addEventListener('mouseout', (e) => {
+  function hiddenControls(e) {
     inialIntervalTime = setInterval(() => {
       controls.style.opacity = '0'
       progressBar.style.opacity = '0'
       controls.style.transition = '2s'
       progressBar.style.transition = '2s'
     }, 1000);
-  })
+  }
 
-  uploadButton.addEventListener('click', () => {
+  function clickButtonFileVideo() {
     inputUploadVideo.click();
-  });
-  
+  }
 
-  inputUploadVideo.addEventListener('change', (e) => {
+  function uploadFile(e) {
     const { files } = e.target;
 
     if(files.length > 0) {
@@ -500,11 +530,158 @@ import {
       });
     }
 
-  });
+  }
+
+  function showConfiguration({ justHide }) {
+    
+    if(contentConfiguration.style.display === 'block') {
+      contentConfiguration.style.display = 'none'
+
+      speed.style.display = 'block'
+      speed.children[0].style.display = 'block'
+      speed.children[1].style.display = 'none'
+
+      quality.style.display = 'block'
+      quality.children[0].style.display = 'block'
+      quality.children[1].style.display = 'none'
+    } else {
+      if(justHide) {
+        contentConfiguration.style.display = 'none'
+
+        speed.style.display = 'block'
+        speed.children[0].style.display = 'block'
+        speed.children[1].style.display = 'none'
+  
+        quality.style.display = 'block'
+        quality.children[0].style.display = 'block'
+        quality.children[1].style.display = 'none'      
+      } else {
+        contentConfiguration.style.display = 'block'
+      }
+    }
+  }
+
+  function selectSectionConfiguration(e) {
+    if(e.target.className === 'quality-selected') {
+      let span = speed
+
+      span.style.display = 'none';
+
+      e.target.style.display = 'none';
+      quality.children[1].style.display = 'block';
+
+      for (var i = 0, len = quality.children[1].childNodes.length; i < len; i++) {
+        quality
+          .children[1]
+          .childNodes[i]
+          .addEventListener('click', (element) => setNewValueConfig(element, e.target.className));
+      }
+      
+    } else if(e.target.className === 'speed-selected') {
+      let span = quality
+
+      span.style.display = 'none';
+
+      e.target.style.display = 'none';
+      speed.children[1].style.display = 'block';
+
+      for (var i = 0, len = speed.children[1].childNodes.length; i < len; i++) {
+        speed
+          .children[1]
+          .childNodes[i]
+          .addEventListener('click', (element) => setNewValueConfig(element, e.target.className));
+      }
+    }
+  }
+
+  function setNewValueConfig(e, type) {
+    if(type === 'quality-selected') {
+      quality.children[0].innerText = e.target.innerText
+    } else {
+      speed.children[0].innerText = e.target.innerText
+      changedSpeed(e.target.innerText.split('x')[0])
+    }  
+      speed.style.display = 'block'
+      speed.children[0].style.display = 'block'
+      speed.children[1].style.display = 'none'
+
+      quality.style.display = 'block'
+      quality.children[0].style.display = 'block'
+      quality.children[1].style.display = 'none'
+  }
+
+  function changedSpeed(e) {
+    if(e !== 'Normal') {
+      video.playbackRate = parseFloat(e)
+    } else {
+      video.playbackRate = 1.0
+    }
+  }
+
+  function getEelment(element, className) {
+    const newElement = document.createElement(element);
+
+    if(className) {
+      newElement.className = className;
+    }
+
+    return newElement
+  }
+
+  function getCardVideo(e) {
+
+    const container = getEelment('div', 'item');
+    const thumbnail = getEelment('div', 'thumbnail');
+    thumbnail.style.backgroundImage = `url(${e.cover})`
+    const info = getEelment('div', 'info');
+    const title = getEelment('div', 'title');
+    title.appendChild(document.createTextNode(e.title))
+    const description = getEelment('div', 'description');
+    description.appendChild(document.createTextNode(e.description))
+    const author = getEelment('div', 'author');
+    author.appendChild(document.createTextNode(e.author))
+    const timeAndData = getEelment('div', 'time-and-data');
+    const spanDuration = getEelment('span');
+    spanDuration.appendChild(document.createTextNode(e.duration))
+    const spanData = getEelment('span');
+    spanData.appendChild(document.createTextNode(e.data))
+
+
+    container.addEventListener('click', (element) => {
+      video.src = e.url;
+      videoCanvas.src = e.url;
+    })
+
+    timeAndData.appendChild(spanDuration)
+    timeAndData.appendChild(spanData)
+    info.appendChild(title)
+    info.appendChild(description)
+    info.appendChild(author)
+    info.appendChild(timeAndData)
+    container.appendChild(thumbnail)
+    container.appendChild(info)
+
+    return container
+  }
+
+  function loadOtherVideo() {
+    videoForTest.map((e) => {
+      contentRight.appendChild(getCardVideo(e))
+    })
+  }
+
+  videoContainer.addEventListener('mouseover', showControls);
+  videoContainer.addEventListener('mouseout', hiddenControls)
+  uploadButton.addEventListener('click', clickButtonFileVideo);
+  inputUploadVideo.addEventListener('change', uploadFile);
+  buttonConfiguration.addEventListener('click', showConfiguration);
+  quality.addEventListener('click', selectSectionConfiguration)
+  speed.addEventListener('click', selectSectionConfiguration)
 
   picInPic.addEventListener("click", setPicInPic);
   removePicInPic.addEventListener("click", setPicInPic);
-
   video.addEventListener('loadeddata', loadVideo);
   videoCanvas.addEventListener('loadeddata', loadVideo);
+
+  loadOtherVideo();
 })();
